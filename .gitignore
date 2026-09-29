@@ -216,3 +216,39 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Dasher export — personal work records (store names + timestamps). Never commit.
+/data/
+*.csv
+!tests/fixtures/*.csv
+# The de-identified sample (four columns, store codes, dates shifted) is meant to be public.
+!sample/*.csv
+
+# Local tool settings (Claude Code preview config, Impeccable design-review cache).
+.claude/
+.impeccable/
+
+# macOS
+.DS_Store
+
+# Only the metric definitions are public. The rest of the app (UI, lookups, tests,
+# build script, the built page) stays local; the page is deployed with the Vercel CLI.
+/code/*
+!/code/data/
+!/code/metrics/
+/code/data/*
+/code/metrics/*
+!/code/data/csv.js
+!/code/data/validate.js
+!/code/data/time.js
+!/code/data/groups.js
+!/code/data/shifts.js
+!/code/data/orders.js
+!/code/data/samples.js
+!/code/metrics/earnings.js
+!/code/metrics/timing.js
+!/code/metrics/volume.js
+!/code/metrics/stats.js
+/minutes-per-order.html
+/deploy/
+.vercel/
