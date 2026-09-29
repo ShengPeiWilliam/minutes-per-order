@@ -1,1 +1,80 @@
-# minutes-per-order
+# Rearview: A Dasher's Dashboard From the Export DoorDash Already Gives You
+[![Open Rearview](https://img.shields.io/badge/🚗_Open_Rearview-Live-blue?style=for-the-badge)](https://your-link-here)
+
+![Rearview dashboard](screenshot-dashboard.png)
+
+**DoorDash gives merchants a dashboard. Dashers get a pay summary. Rearview reads the export from the driver's seat.**
+
+## Why
+
+I wanted to know how DoorDash forecasts: how much a region earns, how many orders an hour a dasher can absorb, and how it handles the uncertainty. So this summer I started dashing. A few weeks in I was more curious about my own numbers, and started building a dashboard while I kept dashing. When DoorDash [introduced Brand Center](https://about.doordash.com/en-us/news/doordash-introduces-brand-center) for merchants, I knew dashers needed one too.
+
+## What my own file showed
+
+465 deliveries over two months, summer 2026, Orange County.
+
+| | Figure | Source |
+|---|---|---|
+| Pay per delivery | **$11.34** | From the file |
+| Pay per dash hour | $29.55 | Estimate, runs high |
+| Customer wait | **30.9 min** median | From the file |
+| Repeat stores | **39%** of orders | From the file |
+| Second drop on a same-store stack | **21.6 min** vs 13.6 solo (+8.1, 95% CI 5.9 to 11.0) | Inferred, n = 37 |
+
+Stacking from one counter saves me time and costs the second customer eight minutes.
+
+## Three things that would mislead
+
+- **Hourly rates from the export alone.** It records orders, not the gaps between them, so time comes out short and rates run high. They stay labeled Estimate until real time is typed in.
+- **A busy hour as demand.** It shows when I was out, not what the platform had to give.
+- **Months by their totals.** The export starts and ends mid month, so order counts are compared per day worked.
+
+## Notes on the design
+
+- **Every figure says where it comes from**: from your file, inferred by a rule, or estimated.
+- **A shift is my rule, not DoorDash's**: a gap over an hour starts a new one.
+
+Left open: the question I started with. Forecasting orders by area and hour, with the uncertainty attached.
+
+## Using it
+
+Read in your browser, never uploaded. The **Docs** tab defines every term. No export? Choose **Try with sample data**. A number looks wrong? [Open an issue](https://github.com/ShengPeiWilliam/minutes-per-order/issues).
+
+## Repository
+
+The metric definitions, the notebook that checks them, and the sample it runs on. The interface is not included.
+
+```
+code/
+  data/
+    csv.js, validate.js, time.js   reading the export: four columns, rejected rows, UTC to local time
+    groups.js                      trips: orders whose pickup-to-drop spans overlap
+    shifts.js                      the one-hour rule, and the waiting between trips
+    orders.js, samples.js          per-order times, and which orders each median counts
+  metrics/
+    timing.js                      order time, before pickup, pickup to door
+    volume.js                      repeat stores
+    earnings.js                    dash time and active time, estimated and calibrated
+    stats.js                       median and percentages
+analysis/
+  validation.ipynb                 reproduces the figures above from the sample, in pandas
+  deidentify.py                    how the sample was made
+sample/
+  sample_delivery_information.csv  my export: four columns, stores as codes, dates shifted
+```
+
+Where each term on the **Docs** tab is computed:
+
+| Term | File |
+|---|---|
+| Trip, stacked orders | `code/data/groups.js` |
+| Shift | `code/data/shifts.js` |
+| Order time, Before pickup, Pickup to door | `code/data/orders.js`, `code/metrics/timing.js` |
+| Repeat stores | `code/metrics/volume.js` |
+| Dash time, Active time | `code/metrics/earnings.js` |
+
+**The notebook** reads the sample, shares no code with the app, and reaches the same figures. It also puts a bootstrap interval on the stacking cost (8.1 min, 95% interval 5.9 to 11.0, resampling the 37 stacked trips as units), checks dash time against one DoorDash statement week (91% recovered, one week only, so no interval), and reruns the shift rule at 30 to 120 minutes (dash hours move 11% at 30, under 2% from 45 up).
+
+**The sample** is my own export with everything but the four columns Rearview reads removed, store names replaced by codes (same store, same code), and every date moved back a whole number of weeks. Weekday and time of day are kept, so every figure matches the original.
+
+Store lookups use Google Maps, with your own key.
