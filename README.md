@@ -19,7 +19,7 @@ I wanted to know how DoorDash forecasts: how much a region earns, how many order
 | Pay per dash hour | $29.55 | Estimate, runs high |
 | Customer wait | **30.9 min** median | From the file |
 | Repeat stores | **39%** of orders | From the file |
-| Second drop on a same-store stack | **21.6 min** vs 13.6 solo (+8.1, 95% CI 5.9 to 11.0) | Inferred, n = 37 |
+| Second drop on a same-store stack | **21.6 min** vs 13.6 solo | Inferred, n = 37 |
 
 Stacking from one counter saves me time and costs the second customer eight minutes.
 
@@ -42,7 +42,7 @@ Read in your browser, never uploaded. The **Docs** tab defines every term. No ex
 
 ## Repository
 
-The metric definitions, the notebook that checks them, and the sample it runs on. The interface is not included.
+The metric definitions. The interface is not included.
 
 ```
 code/
@@ -56,11 +56,6 @@ code/
     volume.js                      repeat stores
     earnings.js                    dash time and active time, estimated and calibrated
     stats.js                       median and percentages
-analysis/
-  validation.ipynb                 reproduces the figures above from the sample, in pandas
-  deidentify.py                    how the sample was made
-sample/
-  sample_delivery_information.csv  my export: four columns, stores as codes, dates shifted
 ```
 
 Where each term on the **Docs** tab is computed:
@@ -72,9 +67,5 @@ Where each term on the **Docs** tab is computed:
 | Order time, Before pickup, Pickup to door | `code/data/orders.js`, `code/metrics/timing.js` |
 | Repeat stores | `code/metrics/volume.js` |
 | Dash time, Active time | `code/metrics/earnings.js` |
-
-**The notebook** reads the sample, shares no code with the app, and reaches the same figures. It also puts a bootstrap interval on the stacking cost (8.1 min, 95% interval 5.9 to 11.0, resampling the 37 stacked trips as units), checks dash time against one DoorDash statement week (91% recovered, one week only, so no interval), and reruns the shift rule at 30 to 120 minutes (dash hours move 11% at 30, under 2% from 45 up).
-
-**The sample** is my own export with everything but the four columns Rearview reads removed, store names replaced by codes (same store, same code), and every date moved back a whole number of weeks. Weekday and time of day are kept, so every figure matches the original.
 
 Store lookups use Google Maps, with your own key.

@@ -221,8 +221,6 @@ __marimo__/
 /data/
 *.csv
 !tests/fixtures/*.csv
-# The de-identified sample (four columns, store codes, dates shifted) is meant to be public.
-!sample/*.csv
 
 # Local tool settings (Claude Code preview config, Impeccable design-review cache).
 .claude/
@@ -252,3 +250,8 @@ __marimo__/
 /minutes-per-order.html
 /deploy/
 .vercel/
+
+# Kept locally, not published: the de-identified sample, the script that made it,
+# and the notebook that checks the app's figures against it.
+/sample/
+/analysis/
