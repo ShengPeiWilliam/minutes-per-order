@@ -1,5 +1,5 @@
 # Rearview: A Dasher's Dashboard From the Export DoorDash Already Gives You
-[![Open Rearview](https://img.shields.io/badge/🚗_Open_Rearview-Live-blue?style=for-the-badge)](https://your-link-here)
+[![Open Rearview](https://img.shields.io/badge/🚗_Open_Rearview-Live-blue?style=for-the-badge)](https://rearview-five.vercel.app)
 
 ![Rearview dashboard](screenshot-dashboard.png)
 
