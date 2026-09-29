@@ -1,4 +1,4 @@
-// RFC-4180-ish CSV reader: quoted fields, doubled quotes, CRLF or LF.
+// Minimal CSV reader: quoted fields, doubled quotes, CRLF or LF.
 
 export function parseCsv(text) {
   const rows = [];

@@ -1,13 +1,7 @@
-// Time handling. Everything the export gives us is UTC without a marker; every
-// calendar question has to be answered in the dasher's own zone instead.
-//
-// The zone is not a detail. Read as local time the pickup histogram peaks at 1-3am
-// with three orders at lunch; converted, it peaks at lunch and dinner. Get the zone
-// wrong and every date, weekday and hour in the app shifts with it.
+// Time handling. Export timestamps are UTC; every date and hour is read in the dasher's zone.
 
 const FALLBACK_TZ = 'America/Los_Angeles';
 
-/** Whatever the browser is set to — right for a dasher working where they live. */
 export function detectTimeZone() {
   try {
     return Intl.DateTimeFormat().resolvedOptions().timeZone || FALLBACK_TZ;
@@ -17,7 +11,6 @@ export function detectTimeZone() {
 let zone = detectTimeZone();
 export const getTimeZone = () => zone;
 
-/** Changing this changes every derived date, so callers must re-run the analysis. */
 export function setTimeZone(tz) {
   try {
     new Intl.DateTimeFormat('en-US', { timeZone: tz });   // throws on a bad zone
@@ -27,7 +20,6 @@ export function setTimeZone(tz) {
   } catch { return false; }
 }
 
-/** Every IANA zone the browser knows, for the picker. */
 export function timeZoneList() {
   try {
     const all = Intl.supportedValuesOf?.('timeZone');
@@ -40,8 +32,7 @@ export function timeZoneList() {
 const MIN = 60000;
 export const minutesBetween = (a, b) => (b - a) / MIN;
 
-/** Export timestamps carry no zone but are UTC — converted, the pickup histogram
- *  lands on a lunch (11-13) and dinner (18-21) peak, which UTC does not produce. */
+/** Parses an export timestamp as UTC. Fractional seconds are ignored. */
 export function parseUtc(s) {
   const m = String(s).trim().match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/);
   if (!m) return null;
@@ -49,8 +40,6 @@ export function parseUtc(s) {
   return new Date(Date.UTC(y, mo - 1, d, h, mi, sec));
 }
 
-// Built per zone and cached: constructing a DateTimeFormat for every timestamp in
-// a multi-thousand-order file is the slowest thing in the pipeline by far.
 const formatters = new Map();
 function partsFormatter() {
   if (!formatters.has(zone)) {
@@ -64,8 +53,7 @@ function partsFormatter() {
 }
 const WEEKDAY_INDEX = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
 
-/** Local calendar fields. An order crossing midnight in UTC would otherwise be
- *  filed under the wrong date and the wrong weekday. */
+/** Date, hour and weekday in the current zone. */
 export function localParts(date) {
   const p = {};
   for (const { type, value } of partsFormatter().formatToParts(date)) p[type] = value;
@@ -78,9 +66,7 @@ export function localParts(date) {
   };
 }
 
-/** Monday of the week a YYYY-MM-DD belongs to. Held in UTC end to end, anchored
- *  at noon, so no zone or DST shift can move it across a day boundary.
- *  DoorDash weeks run Monday to Sunday; a statement week matched this exactly. */
+/** Monday of the week, as YYYY-MM-DD. */
 export function weekStart(dateStr) {
   const d = new Date(`${dateStr}T12:00:00Z`);
   d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7));
@@ -89,13 +75,6 @@ export function weekStart(dateStr) {
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-/**
- * The month a YYYY-MM-DD belongs to, and its last day.
- *
- * The month is the unit DoorDash will export for you rather than only display —
- * tax season needs it — so it is the one a dasher can fill in without copying a
- * screen by hand. Held as UTC at noon, like weekStart, so no zone can shift it.
- */
 export const monthStart = (dateStr) => `${dateStr.slice(0, 7)}-01`;
 
 export function monthEnd(monthStartDate) {
@@ -105,47 +84,24 @@ export function monthEnd(monthStartDate) {
   return d.toISOString().slice(0, 10);
 }
 
-/** "Aug 2026". Long enough to be unambiguous across a multi-year export. */
 export function formatMonth(monthStartDate) {
   const d = new Date(`${monthStartDate}T12:00:00Z`);
   return `${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 }
 
-// Delivery work happens around meals. A zone that scatters pickups across the
-// small hours is the wrong zone, and the gap is not subtle: on a real file the
-// right zone scored 93% here and the machine's own (wrong) zone scored 39%.
+// Delivery work clusters around meals; a zone that puts pickups at night is the wrong zone.
 const MEAL_HOURS = (h) => (h >= 10 && h <= 14) || (h >= 17 && h <= 21);
 
-/**
- * Zones a DoorDash export can plausibly have come from — the US, Canada, Australia
- * and New Zealand — ordered so the populous ones come first.
- *
- * This is a shortlist, not a gate. Which countries DoorDash serves changes over
- * time and the Wolt side of the business covers more of Europe, so the full IANA
- * list stays available underneath rather than being filtered away.
- */
 export const MARKET_ZONES = [
-  // United States
   'America/Los_Angeles', 'America/Denver', 'America/Phoenix', 'America/Chicago',
   'America/New_York', 'America/Detroit', 'America/Boise', 'America/Anchorage',
   'Pacific/Honolulu', 'America/Indiana/Indianapolis', 'America/Kentucky/Louisville',
-  // Canada
   'America/Toronto', 'America/Vancouver', 'America/Edmonton', 'America/Winnipeg',
   'America/Halifax', 'America/Regina', 'America/St_Johns',
-  // Australia and New Zealand
   'Australia/Sydney', 'Australia/Melbourne', 'Australia/Brisbane', 'Australia/Perth',
   'Australia/Adelaide', 'Australia/Darwin', 'Australia/Hobart', 'Pacific/Auckland',
 ];
 
-/**
- * Which country a market zone sits in.
- *
- * A town read off a store name — "Irvine" — matches towns of that name worldwide,
- * so the search needs a country. The file already says which one: the zone was
- * worked out from the pickup times. Anything outside the list returns nothing
- * rather than a guess, and the dasher types their own — a wrong country would aim
- * every lookup at the wrong continent, which is worse than an empty box.
- */
 const ZONE_COUNTRY = [
   [/^(America\/(Los_Angeles|Denver|Phoenix|Chicago|New_York|Detroit|Boise|Anchorage|Indiana|Kentucky)|Pacific\/Honolulu)/, 'USA'],
   [/^America\/(Toronto|Vancouver|Edmonton|Winnipeg|Halifax|Regina|St_Johns)/, 'Canada'],
@@ -159,11 +115,6 @@ export function zoneCountry(tz = getTimeZone()) {
 
 const COMMON_ZONES = MARKET_ZONES;
 
-/**
- * "America/Los Angeles (UTC−8 / −7)" — the offset is how most people know their
- * zone, but the name is what gets stored, because only a named zone knows which
- * offset applies on a given date. Both offsets are shown where they differ.
- */
 const labelCache = new Map();
 export function zoneLabel(tz) {
   if (labelCache.has(tz)) return labelCache.get(tz);
@@ -181,8 +132,6 @@ export function zoneLabel(tz) {
       const m = o.match(/^([+-])(\d+)(?::(\d+))?/);
       return m ? (m[1] === '-' ? -1 : 1) * (Number(m[2]) * 60 + Number(m[3] ?? 0)) : 0;
     };
-    // Ascending, so the pair reads the same way in both hemispheres — January
-    // first would print Adelaide as "+10:30 / +9:30".
     const pair = [trim(at(0)), trim(at(6))].sort((a, b) => minutes(a) - minutes(b));
     const offsets = pair[0] === pair[1] ? pair[0] : `${pair[0]} / ${pair[1]}`;
     label = `${pretty} (UTC${offsets})`.replace(/-/g, '\u2212');    // proper minus sign
@@ -208,22 +157,10 @@ function mealShare(times, tz) {
   return times.length ? hit / times.length : 0;
 }
 
-/**
- * Read the zone off the data instead of asking for it.
- *
- * Every market zone is scored over the whole file, not at one offset: a file that
- * crosses a daylight-saving change scores worse under a zone that does not observe
- * one, which is what separates Los Angeles from Phoenix. When the span cannot tell
- * two zones apart they read the file identically anyway, so the tie is harmless and
- * is broken toward the more populous one.
- *
- * @returns {{ zone, share, runnerUp, decisive, weak }}
- */
+/** The zone that puts the most pickups at mealtimes. */
 export function inferTimeZone(times) {
   if (times.length < 20) return null;
 
-  // Scoring is a formatter call per order per zone; a long history does not need
-  // all of it to establish a daily rhythm.
   const sample = times.length > 2000
     ? times.filter((_, i) => i % Math.ceil(times.length / 2000) === 0)
     : times;
@@ -241,7 +178,7 @@ export function inferTimeZone(times) {
   };
 }
 
-/** Does the active zone still make sense? Kept for the manual-override case. */
+/** Flags the current zone when another fits the mealtime pattern clearly better. */
 export function checkTimeZone(times) {
   const inferred = inferTimeZone(times);
   if (!inferred) return { currentShare: null, bestShare: null, looksWrong: false, suggestions: [] };
@@ -254,13 +191,11 @@ export function checkTimeZone(times) {
   };
 }
 
-/** "Aug 30" from a YYYY-MM-DD, for headings rather than tables. */
 export const formatDay = (dateStr) => {
   const d = new Date(`${dateStr}T12:00:00Z`);
   return `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`;
 };
 
-/** Accepts what DoorDash shows ("33h 29m"), plus "33:29", "33.5h", "2009m", "2009". */
 export function parseDuration(text) {
   const s = String(text).trim().toLowerCase();
   if (!s) return null;
@@ -278,11 +213,6 @@ export function parseDuration(text) {
 export const formatDuration = (min) =>
   min == null ? '—' : `${Math.floor(min / 60)}h ${String(Math.round(min % 60)).padStart(2, '0')}m`;
 
-/**
- * A span for reading rather than entry. Always whole units, never a decimal — "4h"
- * hides whether it is 4.0 or 4.4, and "23.8 min" is precision nobody acts on.
- * Under an hour it drops the leading "0h" instead of padding it.
- */
 export function formatSpan(min) {
   if (min == null || Number.isNaN(min)) return '—';
   const total = Math.round(min);
@@ -290,7 +220,6 @@ export function formatSpan(min) {
   return h ? `${h}h ${String(m).padStart(2, '0')}m` : `${m}m`;
 }
 
-/** "$996.43", "996,43" style noise stripped. */
 export function parseMoney(text) {
   const s = String(text).replace(/[$,\s]/g, '');
   if (!s || !/^\d+(\.\d+)?$/.test(s)) return null;

@@ -1,7 +1,4 @@
 // Counting: when you work and where you go.
-//
-// Volume is the most trustworthy read in this file. Speed compared across
-// weekdays is not — it is tangled with which hours and which areas you worked.
 
 import { counter, pct } from './stats.js';
 
@@ -17,7 +14,7 @@ export const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
 
 export const stores = ({ orders }) => counter(orders, (o) => o.store);
 
-/** How much of the work is routine rather than one-off. */
+/** Repeat share: orders beyond the first at each store, over all orders. */
 export const storeLoyalty = ({ orders }) => {
   const s = counter(orders, (o) => o.store);
   const once = [...s.values()].filter((n) => n === 1).length;

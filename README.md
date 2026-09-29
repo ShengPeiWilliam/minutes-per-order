@@ -1,5 +1,6 @@
 # Rearview: A Dasher's Dashboard From the Export DoorDash Already Gives You
-[![Open Rearview](https://img.shields.io/badge/🚗_Open_Rearview-Live-blue?style=for-the-badge)](https://rearview-five.vercel.app)
+
+**[Open Rearview →](https://rearview-five.vercel.app)**
 
 ![Rearview dashboard](screenshot-dashboard.png)
 
@@ -9,6 +10,8 @@
 
 I wanted to know how DoorDash forecasts: how much a region earns, how many orders an hour a dasher can absorb, and how it handles the uncertainty. So this summer I started dashing. A few weeks in I was more curious about my own numbers, and started building a dashboard while I kept dashing. When DoorDash [introduced Brand Center](https://about.doordash.com/en-us/news/doordash-introduces-brand-center) for merchants, I knew dashers needed one too.
 
+Left open: the question I started with. Forecasting orders by area and hour, with the uncertainty attached.
+
 ## What my own file showed
 
 465 deliveries over two months, summer 2026, Orange County.
@@ -17,7 +20,7 @@ I wanted to know how DoorDash forecasts: how much a region earns, how many order
 |---|---|---|
 | Pay per delivery | **$11.34** | From the file |
 | Pay per dash hour | $29.55 | Estimate, runs high |
-| Customer wait | **30.9 min** median | From the file |
+| Order time (customer wait) | **30.9 min** median | From the file |
 | Repeat stores | **39%** of orders | From the file |
 | Second drop on a same-store stack | **21.6 min** vs 13.6 solo | Inferred, n = 37 |
 
@@ -34,11 +37,9 @@ Stacking from one counter saves me time and costs the second customer eight minu
 - **Every figure says where it comes from**: from your file, inferred by a rule, or estimated.
 - **A shift is my rule, not DoorDash's**: a gap over an hour starts a new one.
 
-Left open: the question I started with. Forecasting orders by area and hour, with the uncertainty attached.
-
 ## Using it
 
-Read in your browser, never uploaded. The **Docs** tab defines every term. No export? Choose **Try with sample data**. A number looks wrong? [Open an issue](https://github.com/ShengPeiWilliam/minutes-per-order/issues).
+Read in your browser, never uploaded. Store lookups use Google Maps, with your own key. The **Docs** tab defines every term. No export? Choose **Try with sample data**. A number looks wrong? [Open an issue](https://github.com/ShengPeiWilliam/minutes-per-order/issues).
 
 ## Repository
 
@@ -57,15 +58,3 @@ code/
     earnings.js                    dash time and active time, estimated and calibrated
     stats.js                       median and percentages
 ```
-
-Where each term on the **Docs** tab is computed:
-
-| Term | File |
-|---|---|
-| Trip, stacked orders | `code/data/groups.js` |
-| Shift | `code/data/shifts.js` |
-| Order time, Before pickup, Pickup to door | `code/data/orders.js`, `code/metrics/timing.js` |
-| Repeat stores | `code/metrics/volume.js` |
-| Dash time, Active time | `code/metrics/earnings.js` |
-
-Store lookups use Google Maps, with your own key.

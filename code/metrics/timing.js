@@ -1,42 +1,29 @@
-// Where the minutes of an order go.
-//
-// Each figure names the sample it is allowed to use; see data/samples.js for why
-// those rules are not the same on both legs.
+// Where an order's minutes go. Each figure uses the sample named in data/samples.js.
 
 import { median, quantile } from './stats.js';
 import { SAMPLES } from '../data/samples.js';
 
 export const TIER = 'solid';
 
-/** Pickup -> dropped. Solo runs only. */
+/** Pickup -> drop-off, solo trips only. */
 export const leg = ({ orders }) => {
   const v = orders.filter(SAMPLES.leg).map((o) => o.leg);
   return { value: median(v), p75: quantile(v, 0.75), n: v.length, unit: 'min' };
 };
 
-/** The stacked order that was dropped first — the nearer of the two. Biased by
- *  construction, so it stays a separate series and never joins `leg`. */
+/** The stacked order dropped first. Biased nearer, so never pooled with leg. */
 export const nearerDrop = ({ orders }) => {
   const v = orders.filter(SAMPLES.nearerDrop).map((o) => o.leg);
   return { value: median(v), n: v.length, unit: 'min' };
 };
 
-/** Whole cost of an order, first pickup to dropped, shared across the run. Never
- *  ORDER_CREATED_TIME — for a solo run this is exactly `leg`; for a stacked run
- *  it is the whole trip's span split evenly across the orders sharing it. */
+/** Trip span from first pickup to last drop, split evenly across its orders. */
 export const costPerOrder = ({ groups }) => {
   const v = groups.map((g) => g.minutesPerOrder);
   return { value: median(v), n: v.length, unit: 'min' };
 };
 
-/**
- * Order created to delivered, bucketed by an arbitrary key (store kind, meal
- * period, whatever the caller asks). This is the one figure in the app that
- * does read ORDER_CREATED_TIME — standing in for when the system took the
- * order, not the moment a dasher saw or accepted it, which this file never
- * records. A scheduled order's gap to pickup is a booked wait rather than the
- * kitchen's clock starting, so those are dropped before bucketing.
- */
+/** Created -> delivered, grouped by any key. Scheduled orders excluded. */
 export function orderTimeBy(orders, keyOf) {
   const buckets = new Map();
   for (const o of orders) {

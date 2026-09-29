@@ -1,9 +1,8 @@
-// Per-order fields and flags, derived straight from one row.
+// Per-order times and flags, from one row each.
 
 import { parseUtc, localParts, minutesBetween } from './time.js';
 
-// Dispatch -> pickup beyond this is a scheduled order: accepted in advance, so
-// the span holds waiting that has nothing to do with how you work.
+// Created -> pickup beyond this is a scheduled order, placed in advance.
 export const SCHEDULED_MIN = 60;
 
 export function buildOrders(records) {
@@ -29,7 +28,6 @@ export function buildOrders(records) {
         local: localParts(pickup),
         isScheduled: toPickup > SCHEDULED_MIN,
         isRetail: subtotal === 0,                    // retail / grocery, no subtotal shown
-        // filled in once the orders are grouped
         groupId: null, groupSize: 1, pickupOrder: 0, isBatched: false, isDoubled: false,
       };
     })

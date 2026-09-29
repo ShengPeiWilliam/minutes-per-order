@@ -1,8 +1,4 @@
-// Row-level validation, run before anything is derived.
-//
-// The failure mode this guards against is the quiet one: a row with the drop-off
-// before the pickup does not throw, it just contributes a negative duration to a
-// median. Rejected rows are counted and reported, never dropped in silence.
+// Row checks before anything is derived. Rejected rows are counted, never dropped silently.
 
 import { parseUtc } from './time.js';
 
@@ -28,9 +24,6 @@ export class MissingColumns extends Error {
   }
 }
 
-/**
- * @returns {{ records: object[], report: { total, kept, rejected: {reason,count,examples}[] } }}
- */
 export function validateRows(records, header) {
   const missing = REQUIRED.filter((c) => !header.includes(c));
   if (missing.length) throw new MissingColumns(missing);
@@ -51,9 +44,7 @@ export function validateRows(records, header) {
     if (d < p) { reject('negativeLeg', r); continue; }
     if (p < c) { reject('negativePickup', r); continue; }
 
-    // An exact repeat of all four fields is an export artefact, and it is worse
-    // than noise here: two identical rows overlap perfectly, so the grouping
-    // reads them as one stacked run and the stack rate climbs.
+    // An exact repeat would overlap itself and read as a stacked trip.
     const key = `${r.ORDER_CREATED_TIME}|${r.ACTUAL_PICKUP_TIME}|${r.ACTUAL_DELIVERY_TIME}|${r.STORE_NAME}`;
     if (seen.has(key)) { reject('duplicate', r); continue; }
     seen.add(key);

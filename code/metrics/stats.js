@@ -1,5 +1,4 @@
-// Shared summary statistics. Everything returns null on an empty set rather than
-// NaN, so a metric with no sample renders as a dash instead of "NaN".
+// Summary statistics. Empty input returns null, never NaN.
 
 export function median(v) {
   if (!v.length) return null;
