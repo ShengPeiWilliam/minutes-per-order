@@ -1,20 +1,18 @@
-# Rearview: A Dasher's Dashboard From the Export DoorDash Already Gives You
-
-**[Open Rearview →](https://rearview-five.vercel.app)**
-
-![Rearview dashboard](screenshot-dashboard.png)
+# Rearview
 
 **DoorDash gives merchants a dashboard. Dashers get a pay summary. Rearview reads the export from the driver's seat.**
 
+**[Open Rearview](https://rearview-five.vercel.app)** · [Docs](https://rearview-five.vercel.app/#docs)
+
+[![Rearview dashboard](screenshot-dashboard.png)](https://rearview-five.vercel.app)
+
 ## Why
 
-I wanted to know how DoorDash forecasts: how much a region earns, how many orders an hour a dasher can absorb, and how it handles the uncertainty. So this summer I started dashing. A few weeks in I was more curious about my own numbers, and started building a dashboard while I kept dashing. When DoorDash [introduced Brand Center](https://about.doordash.com/en-us/news/doordash-introduces-brand-center) for merchants, I knew dashers needed one too.
-
-Left open: the question I started with. Forecasting orders by area and hour, with the uncertainty attached.
+I wanted to know how DoorDash forecasts: how much a region earns, how many orders an hour a dasher can absorb, and how it handles the uncertainty. So in July I started dashing. By month's end I was more curious about my own numbers, and started building a dashboard while I kept dashing. When DoorDash [introduced Brand Center](https://about.doordash.com/en-us/news/doordash-introduces-brand-center) for merchants, I knew dashers needed one too.
 
 ## What my own file showed
 
-465 deliveries over two months, summer 2026, Orange County.
+465 deliveries over two months in Orange County.
 
 | | Figure | Source |
 |---|---|---|
@@ -30,16 +28,22 @@ Stacking from one counter saves me time and costs the second customer eight minu
 
 - **Hourly rates from the export alone.** It records orders, not the gaps between them, so time comes out short and rates run high. They stay labeled Estimate until real time is typed in.
 - **A busy hour as demand.** It shows when I was out, not what the platform had to give.
-- **Months by their totals.** The export starts and ends mid month, so order counts are compared per day worked.
+- **Months by their totals.** The export starts and ends mid month, so changes are compared per day.
 
 ## Notes on the design
 
 - **Every figure says where it comes from**: from your file, inferred by a rule, or estimated.
 - **A shift is my rule, not DoorDash's**: a gap over an hour starts a new one.
 
+Left open: the question I started with. Forecasting orders by area and hour, with the uncertainty attached.
+
 ## Using it
 
-Read in your browser, never uploaded. Store lookups use Google Maps, with your own key. The **Docs** tab defines every term. No export? Choose **Try with sample data**. A number looks wrong? [Open an issue](https://github.com/ShengPeiWilliam/minutes-per-order/issues).
+Your file is read in your browser and never uploaded. No export yet? Choose **Try with sample data**, which is made up.
+
+The store map is optional and uses your own Google Maps API key, kept in your browser. Everything else works without one.
+
+A number looks wrong? [Open an issue](https://github.com/ShengPeiWilliam/minutes-per-order/issues).
 
 ## Repository
 
@@ -47,17 +51,20 @@ The metric definitions. The interface is not included.
 
 ```
 code/
-  data/
-    csv.js, validate.js, time.js   reading the export: four columns, rejected rows, UTC to local time
-    groups.js                      trips: orders whose pickup-to-drop spans overlap
-    shifts.js                      the one-hour rule, and the waiting between trips
-    orders.js, samples.js          per-order times, and which orders each median counts
-  metrics/
-    timing.js                      order time, before pickup, pickup to door
-    volume.js                      repeat stores
-    earnings.js                    dash time and active time, estimated and calibrated
-    stats.js                       median and percentages
+  ├── data/      # reading the export: parsing, time zones, trips, shifts
+  └── metrics/   # the figures computed from data/
 ```
+
+Each term in the [Docs](https://rearview-five.vercel.app/#docs) lives in one place:
+
+| Term | File |
+|---|---|
+| Trip | `code/data/groups.js` |
+| Shift, waiting between trips | `code/data/shifts.js` |
+| Dash time, active time | `code/metrics/earnings.js` |
+| Order time, before pickup, pickup to door | `code/data/orders.js`, `code/metrics/timing.js` |
+
+**Stack**: JavaScript with no framework, bundled into one page. Google Maps for store lookups.
 
 ---
 
