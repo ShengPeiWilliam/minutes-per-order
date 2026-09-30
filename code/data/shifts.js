@@ -1,8 +1,9 @@
 // Shifts: trips joined until a gap of more than an hour.
 
 import { minutesBetween } from './time.js';
+import { SHIFT_GAP_MIN } from './rules.js';
 
-export const SHIFT_GAP_MIN = 60;
+export { SHIFT_GAP_MIN };
 
 /**
  * Built from pickup..delivery, never from order creation, so a scheduled order cannot

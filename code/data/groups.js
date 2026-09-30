@@ -1,12 +1,11 @@
 // Trips: orders that were in the car at the same time.
 
 import { minutesBetween } from './time.js';
+import { SAME_SPOT_MIN, DOOR_GAP_MIN as BOUNDARY_MIN, DOOR_GAP_MAX as BOUNDARY_MAX } from './rules.js';
 
-// Fallback when the file has too few pairs to learn the boundary from.
-export const SAME_SPOT_MIN = 1;
-
-const BOUNDARY_MIN = 0.5;   // minutes — below this, two separate doors cannot fit
-const BOUNDARY_MAX = 3;     // minutes — beyond this you have driven somewhere else
+// SAME_SPOT_MIN: the fallback when the file has too few pairs to learn the boundary from.
+// BOUNDARY_MIN: below this, two separate doors cannot fit; BOUNDARY_MAX: beyond it you have driven somewhere else.
+export { SAME_SPOT_MIN };
 
 /** Where one door ends and two begin: the largest jump in drop gaps between 0.5 and 3 min. */
 export function findDropBoundary(gaps) {

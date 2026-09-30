@@ -237,6 +237,7 @@ __marimo__/
 /code/data/*
 /code/metrics/*
 !/code/data/csv.js
+!/code/data/rules.js
 !/code/data/validate.js
 !/code/data/time.js
 !/code/data/groups.js

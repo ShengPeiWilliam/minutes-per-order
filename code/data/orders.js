@@ -1,9 +1,10 @@
 // Per-order times and flags, from one row each.
 
 import { parseUtc, localParts, minutesBetween } from './time.js';
+import { SCHEDULED_MIN } from './rules.js';
 
-// Created -> pickup beyond this is a scheduled order, placed in advance.
-export const SCHEDULED_MIN = 60;
+// Created -> pickup beyond SCHEDULED_MIN is a scheduled order, placed in advance.
+export { SCHEDULED_MIN };
 
 export function buildOrders(records) {
   return records
