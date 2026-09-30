@@ -211,10 +211,10 @@ export function parseDuration(text) {
 }
 
 export const formatDuration = (min) =>
-  min == null ? '—' : `${Math.floor(min / 60)}h ${String(Math.round(min % 60)).padStart(2, '0')}m`;
+  min == null ? 'n/a' : `${Math.floor(min / 60)}h ${String(Math.round(min % 60)).padStart(2, '0')}m`;
 
 export function formatSpan(min) {
-  if (min == null || Number.isNaN(min)) return '—';
+  if (min == null || Number.isNaN(min)) return 'n/a';
   const total = Math.round(min);
   const h = Math.floor(total / 60), m = total % 60;
   return h ? `${h}h ${String(m).padStart(2, '0')}m` : `${m}m`;
