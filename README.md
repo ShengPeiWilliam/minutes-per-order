@@ -8,7 +8,7 @@
 
 ## Why
 
-I wanted to know how DoorDash forecasts: how much a region earns, how many orders an hour a dasher can absorb, and how it handles the uncertainty. So in July I started dashing. By month's end I was more curious about my own numbers, and started building a dashboard while I kept dashing. When DoorDash [introduced Brand Center](https://about.doordash.com/en-us/news/doordash-introduces-brand-center) for merchants, I knew dashers needed one too.
+I wanted to know how DoorDash forecasts: how much a region earns, how many orders an hour a driver can absorb, and how it handles the uncertainty. So in July I started delivering. By month's end I was more curious about my own numbers, and started building a dashboard while I kept delivering. When DoorDash [introduced Brand Center](https://about.doordash.com/en-us/news/doordash-introduces-brand-center) for merchants, I knew drivers needed one too.
 
 ## What my own file showed
 
