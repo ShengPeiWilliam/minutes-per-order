@@ -2,9 +2,9 @@
 
 **DoorDash gives merchants a dashboard. Dashers get a pay summary. Rearview reads the export from the driver's seat.**
 
-**[Open Rearview](https://rearview-dasher.vercel.app)** · [Docs](https://rearview-dasher.vercel.app/#docs)
+**[Open Rearview](https://rearview-driver.vercel.app)** · [Docs](https://rearview-driver.vercel.app/#docs)
 
-[![Rearview dashboard](screenshot-dashboard.png)](https://rearview-dasher.vercel.app)
+[![Rearview dashboard](screenshot-dashboard.png)](https://rearview-driver.vercel.app)
 
 ## Why
 
@@ -55,7 +55,7 @@ code/
   └── metrics/   # the figures computed from data/
 ```
 
-Each term in the [Docs](https://rearview-dasher.vercel.app/#docs) lives in one place:
+Each term in the [Docs](https://rearview-driver.vercel.app/#docs) lives in one place:
 
 | Term | File |
 |---|---|
