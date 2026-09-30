@@ -1,6 +1,7 @@
 // Row checks before anything is derived. Rejected rows are counted, never dropped silently.
 
 import { parseUtc } from './time.js';
+import { MAX_TRIP_HOURS } from './rules.js';
 
 export const REQUIRED = [
   'ORDER_CREATED_TIME',
@@ -13,6 +14,8 @@ const REASONS = {
   unparseable: 'timestamp could not be read',
   negativeLeg: 'dropped off before it was picked up',
   negativePickup: 'picked up before it was dispatched',
+  tooLong: `over ${MAX_TRIP_HOURS} hours from pickup to drop-off`,
+  future: 'dated in the future',
   duplicate: 'identical to an earlier row',
 };
 
@@ -24,7 +27,7 @@ export class MissingColumns extends Error {
   }
 }
 
-export function validateRows(records, header) {
+export function validateRows(records, header, now = Date.now()) {
   const missing = REQUIRED.filter((c) => !header.includes(c));
   if (missing.length) throw new MissingColumns(missing);
 
@@ -43,6 +46,9 @@ export function validateRows(records, header) {
     if (!c || !p || !d) { reject('unparseable', r); continue; }
     if (d < p) { reject('negativeLeg', r); continue; }
     if (p < c) { reject('negativePickup', r); continue; }
+    if (d - p > MAX_TRIP_HOURS * 36e5) { reject('tooLong', r); continue; }
+    // A day's grace: the stamps are UTC, and a dasher west of it is behind.
+    if (+p > now + 864e5) { reject('future', r); continue; }
 
     // An exact repeat would overlap itself and read as a stacked trip.
     const key = `${r.ORDER_CREATED_TIME}|${r.ACTUAL_PICKUP_TIME}|${r.ACTUAL_DELIVERY_TIME}|${r.STORE_NAME}`;
