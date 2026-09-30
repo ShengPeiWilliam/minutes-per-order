@@ -58,3 +58,7 @@ code/
     earnings.js                    dash time and active time, estimated and calibrated
     stats.js                       median and percentages
 ```
+
+---
+
+© 2026 William Chen. Not affiliated with or endorsed by DoorDash.
