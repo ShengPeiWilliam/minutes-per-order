@@ -256,3 +256,6 @@ __marimo__/
 # and the notebook that checks the app's figures against it.
 /sample/
 /analysis/
+
+# Post screenshots, kept locally.
+/screenshots/
