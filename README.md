@@ -2,7 +2,7 @@
 
 A dashboard for delivery drivers. Three views of your deliveries, built from the export DoorDash lets you download, read in your browser and never uploaded.
 
-**Quick start:** [Open Rearview with sample data](https://rearview-driver.vercel.app/#sample). No file needed. Have your export? [Drop it in](https://rearview-driver.vercel.app); the page shows where to get it.
+**Quick start:** [Open Rearview with sample data](https://rearview-driver.vercel.app/#sample).
 
 ## Why Rearview?
 
