@@ -1,21 +1,8 @@
-// Pay per delivery and per hour, from monthly totals typed in by the dasher.
+// Pay per delivery and per hour, from monthly totals typed in by the driver.
 
 import { monthStart, monthEnd, formatMonth, formatDay } from '../data/time.js';
 
 export const TIER = 'needs-input';
-
-/** Minutes covered by these intervals, overlaps counted once. */
-function unionMinutes(intervals) {
-  const s = intervals.slice().sort((a, b) => a[0] - b[0]);
-  let total = 0, from = null, to = null;
-  for (const [a, b] of s) {
-    if (from === null) { from = a; to = b; }
-    else if (a <= to) { if (b > to) to = b; }
-    else { total += to - from; from = a; to = b; }
-  }
-  if (from !== null) total += to - from;
-  return total / 60000;
-}
 
 /** Average ratio of reported to reconstructed time, over the months entered. */
 export function calibrate(rows, field, baseField) {
@@ -24,7 +11,7 @@ export function calibrate(rows, field, baseField) {
   return known.reduce((a, r) => a + r[field] / r[baseField], 0) / known.length;
 }
 
-/** One row per month in the export, with deliveries and reconstructed dash and active time. */
+/** One row per month in the export, with deliveries and reconstructed dash time. */
 export function periodRows(orders, shifts, entries) {
   if (!orders.length) return [];
   const dates = orders.map((o) => o.local.date).sort();
@@ -33,11 +20,9 @@ export function periodRows(orders, shifts, entries) {
   const buckets = new Map();
   for (const o of orders) {
     const k = monthStart(o.local.date);
-    if (!buckets.has(k)) buckets.set(k, { period: k, deliveries: 0, inferredMin: 0, spans: [] });
+    if (!buckets.has(k)) buckets.set(k, { period: k, deliveries: 0, inferredMin: 0 });
     buckets.get(k).deliveries++;
-    buckets.get(k).spans.push([+o.pickup, +o.delivery]);
   }
-  for (const row of buckets.values()) row.activeBaseMin = unionMinutes(row.spans);
   for (const s of shifts) {
     const k = monthStart(s.local.date);
     if (buckets.has(k)) buckets.get(k).inferredMin += s.hours * 60;
@@ -49,11 +34,10 @@ export function periodRows(orders, shifts, entries) {
     const partial = row.period < first || periodEnd > last;
 
     const e = entries[row.period] ?? {};
-    const pay = e.pay ?? null, dashMin = e.dashMin ?? null, activeMin = e.activeMin ?? null;
+    const pay = e.pay ?? null, dashMin = e.dashMin ?? null;
 
     return {
       ...row,
-      spans: undefined,
       periodEnd,
       label: formatMonth(row.period),
       partial,
@@ -64,35 +48,28 @@ export function periodRows(orders, shifts, entries) {
         ? [row.period < first ? `from ${formatDay(first)}` : '',
           periodEnd > last ? `to ${formatDay(last)}` : ''].filter(Boolean).join(' ')
         : '',
-      pay, dashMin, activeMin,
+      pay, dashMin,
       perDelivery: pay != null && row.deliveries ? pay / row.deliveries : null,
       perDashHour: pay != null && dashMin ? pay / (dashMin / 60) : null,
-      perActiveHour: pay != null && activeMin ? pay / (activeMin / 60) : null,
-      utilisation: dashMin && activeMin ? Math.round((100 * activeMin) / dashMin) : null,
     };
   });
 }
 
-/** Fills empty dash and active time: calibrated once a month is entered, the raw floor before that. */
+/** Fills empty dash time: calibrated once a month is entered, the raw floor before that. */
 export function withEstimates(rows) {
   const kDash = calibrate(rows, 'dashMin', 'inferredMin');
-  const kActive = calibrate(rows, 'activeMin', 'activeBaseMin');
   const basedOn = (field) => rows.filter((r) => r[field] != null && !r.partial).length;
   return rows.map((r) => {
     const estimate = {
       dashMin: r.dashMin != null ? null : Math.round(kDash ? r.inferredMin * kDash : r.inferredMin),
-      activeMin: r.activeMin != null ? null : Math.round(kActive ? r.activeBaseMin * kActive : r.activeBaseMin),
     };
     const dashMinEff = r.dashMin ?? estimate.dashMin;
-    const activeMinEff = r.activeMin ?? estimate.activeMin;
     return {
       ...r,
       estimate,
-      estimateBasis: { dashMin: kDash ? 'calibrated' : 'floor', activeMin: kActive ? 'calibrated' : 'floor' },
-      basedOn: { dashMin: basedOn('dashMin'), activeMin: basedOn('activeMin') },
+      estimateBasis: { dashMin: kDash ? 'calibrated' : 'floor' },
+      basedOn: { dashMin: basedOn('dashMin') },
       perDashHour: r.pay != null && dashMinEff ? r.pay / (dashMinEff / 60) : null,
-      perActiveHour: r.pay != null && activeMinEff ? r.pay / (activeMinEff / 60) : null,
-      utilisation: dashMinEff && activeMinEff ? Math.round((100 * activeMinEff) / dashMinEff) : null,
     };
   });
 }
@@ -104,15 +81,12 @@ export function totals(rows) {
   const sum = (f) => paid.reduce((a, r) => a + (f(r) ?? 0), 0);
   const pay = sum((r) => r.pay);
   const dashMin = sum((r) => r.dashMin ?? r.estimate?.dashMin);
-  const activeMin = sum((r) => r.activeMin ?? r.estimate?.activeMin);
   const deliveries = sum((r) => r.deliveries);
   return {
     periods: paid.length,
     partial: paid.filter((r) => r.partial).length,
-    pay, dashMin, activeMin, deliveries,
+    pay, dashMin, deliveries,
     perDelivery: deliveries ? pay / deliveries : null,
     perDashHour: dashMin ? pay / (dashMin / 60) : null,
-    perActiveHour: activeMin ? pay / (activeMin / 60) : null,
-    utilisation: dashMin && activeMin ? Math.round((100 * activeMin) / dashMin) : null,
   };
 }

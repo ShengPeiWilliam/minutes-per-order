@@ -36,6 +36,8 @@ Rearview adds:
 
 Gas and driving need a Stride export, and pay figures need your monthly total.
 
+Why it's built this way, and what I chose to leave out: [design notes](DESIGN.md).
+
 This repository holds the metric definitions. The interface is not included.
 
 ---
