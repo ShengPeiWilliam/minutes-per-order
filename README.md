@@ -1,68 +1,42 @@
 # Rearview
 
-**DoorDash built a great dashboard for restaurants. Rearview reads the export from the driver's seat.**
+A dashboard for delivery drivers. Three views of your deliveries, built from the export DoorDash lets you download, read in your browser and never uploaded.
 
-**[Open Rearview](https://rearview-driver.vercel.app)** · [Docs](https://rearview-driver.vercel.app/#docs)
+**Quick start:** [Open Rearview with sample data](https://rearview-driver.vercel.app/#sample). No file needed. Have your export? [Drop it in](https://rearview-driver.vercel.app); the page shows where to get it.
 
-[![Rearview dashboard](screenshot-dashboard.png)](https://rearview-driver.vercel.app)
+## Why Rearview?
 
-## Why
+DoorDash built [a great dashboard for restaurants](https://about.doordash.com/en-us/news/doordash-introduces-brand-center). It shows how much a marketplace gains when one side can see its own numbers. Drivers are the third side.
 
-DoorDash built a great dashboard for restaurants, [Brand Center](https://about.doordash.com/en-us/news/doordash-introduces-brand-center). It shows how much a marketplace gains when one side can see its own numbers. Drivers are the third side, and I wanted the same for them.
+The pay screen shows what you earned. It doesn't show what an hour paid after gas, how long your customers waited, or which stores you keep going back to. So I started delivering to see the marketplace from the inside, and built the dashboard I wished I had. What my own file showed is in [this post](https://www.linkedin.com/feed/update/urn:li:activity:7511199326451269632/).
 
-In July I started delivering to see the marketplace from the inside: how much a region earns, how many orders an hour a driver can absorb, how the platform handles the uncertainty. By month's end I was more curious about my own numbers, so I built the dashboard I wished I had.
+Rearview adds:
 
-## What my own file showed
+- **Every figure is labeled** by where it comes from: your file, a rule, or an estimate. [See how each is worked out](https://rearview-driver.vercel.app/#docs-methods).
+- **One real week corrects the estimates.**
+- **Stride miles, matched to your DoorDash days.**
 
-465 deliveries over two months in Orange County.
+## What it answers
 
-| | Figure | Source |
-|---|---|---|
-| Order time (customer wait) | **30.9 min** median | From the file |
-| Repeat stores | **39%** of orders | From the file |
-| Second drop on a same-store stack | **21.6 min** vs 13.6 solo | Inferred, n = 37 |
-| Fuel | **13%** of pay | Stride miles at 30 mpg, each week's average gas price |
+**Drive**, your choices
+- **Earnings**: what a delivery pays, what an hour pays, and how much of it goes to gas.
+- **Driving**: how far you drive for each order, and which days ran long.
+- **Analytics**: when your orders come in, and which weekday has the longest wait between trips.
+- **Goal**: the hours, or the rate, that would reach a monthly goal.
+- **Report**: the whole file as one page you can save as a PDF.
 
-Stacking saves me 1.6 minutes an order. When both orders come from one counter, the second customer waits 8.1 minutes longer than a solo drop.
+**Platform**, what the platform decides
+- How long customers wait, and what makes it longer.
+- What carrying two orders costs the second customer.
 
-## Three things that would mislead
+**Stores**, where you pick up
+- Which stores you keep going back to.
+- Which towns your stores are in, and whether the kind of store you pick up from is changing.
 
-- **Hourly rates from the export alone.** It records orders, not the gaps between them, so time comes out short and rates run high. They stay labeled Estimate until you calibrate with one real week from DoorDash.
-- **A busy hour as demand.** It shows when I was out, not what the platform had to give.
-- **Months by their totals.** The export starts and ends mid month, so changes are compared per day.
+Gas and driving need a Stride export, and pay figures need your monthly total.
 
-## Notes on the design
-
-- **Every figure says where it comes from**: from your file, inferred by a rule, or estimated.
-- **A shift is my rule, not DoorDash's**: a gap over an hour starts a new one.
-
-Left open: the question I started with. Forecasting orders by area and hour, with the uncertainty attached.
-
-## Using it
-
-Your file is read in your browser and never uploaded. No export yet? Choose **Try with sample data**, which is made up.
-
-Add a Stride mileage export to see fuel and what an hour paid after it. Only dates and miles are read, never the addresses.
-
-The store map is optional and uses your own Google Maps API key, kept in your browser. Everything else works without one.
-
-A number looks wrong? [Open an issue](https://github.com/ShengPeiWilliam/minutes-per-order/issues).
-
-## Repository
-
-The metric definitions. The interface is not included.
-
-```
-code/
-  ├── data/         # reading the export: parsing, time zones, trips, shifts
-  │   └── rules.js  # every threshold behind a figure, in one file
-  └── metrics/      # the figures computed from data/
-```
-
-Each term is explained in the [Docs](https://rearview-driver.vercel.app/#docs-methods).
-
-**Stack**: JavaScript with no framework, bundled into one page. Google Maps for store lookups.
+This repository holds the metric definitions. The interface is not included.
 
 ---
 
-© 2026 William Chen. Not affiliated with or endorsed by DoorDash or Stride.
+Created by [William Chen](https://www.linkedin.com/in/shengpeichen). Not affiliated with or endorsed by DoorDash or Stride.
